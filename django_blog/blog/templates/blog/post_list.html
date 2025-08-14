@@ -1,0 +1,9 @@
+{% for post in posts %}
+<h2><a href="{% url 'post-detail post.pk %'}">{{ post.title }}'</a></h2>
+<p>{{ post.content|slice:": 100" }}...</p>
+<hr>
+{% endfor %}
+{% if user.is_authenticated %}
+  <a href="{% url 'post-create' %}">Create new Post</a>
+{% endif %}  
+
