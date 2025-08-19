@@ -3,6 +3,7 @@ from django.contrib.auth import views as auth_views
 from . import views
 from .views import ( PostListView, PostDetailView, PostCreateView, PostUpdateView, PostDeleteView)
 
+
 urlpatterns = [
     path('register/', views.register, name ='register'),
     path('login/', auth_views.LoginView.as_view(template_name='blog/login.html'), name='login'),
@@ -26,9 +27,8 @@ urlpatterns = [
     # new features
 
     path('search/', views.SearchResultsView.as_view(), name='search'),
-    path('tags/<str:tag_name>/', views.posts_by_tag, name='posts_by_tag'),
-]
+    path('tags/<slug:tag_slug>/', views.PostByTagListView.as_view(), name='posts_by_tag'),
 
- 
+]
 
 
