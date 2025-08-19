@@ -15,25 +15,16 @@ class UserRegisterForm(UserCreationForm):
         model = User
         fields = ['username', 'email', 'password', 'password2']
 
+from taggit.forms import TagWidget
+
 class PostForm(forms.ModelForm):
-    # Let users enter tags as comme-separated
-    tags = forms.CharField(required=False,help_text="Add tags separated by commas")
     class Meta:
         model = Post
-        fields = ['title', 'content', 'tags'] 
+        fields = ['title', 'content', 'tags']
+        widgets = {
+            'tags': TagWidget(),
+        }
 
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        if commit:
-            instance.save()
-            #process tags
-            tags_str = self.cleaned_data['tags']
-            tag_names = [t.strip() for t in tags_str.split(',') if t.strip()]
-            for name in tag_names:
-                tag, created = Tag.objects.get_or_create(name=name)
-                instance.tags.add(tag)
-
-        return instance
 
 class CommentForm(forms.ModelForm):
     class Meta:
