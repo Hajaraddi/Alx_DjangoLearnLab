@@ -5,9 +5,17 @@ from rest_framework.authtoken.models import Token
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
+    following = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=True
+    ) #List of user IDs this user follows
+    followers = serializers.PrimaryKeyRealtedField(
+        many=True, read_only=True
+    ) #List of user IDs following this user
+
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'bio', 'profile_picture']
+        fields = ['id', 'username', 'email', 'bio', 'profile_picture', 'following', 'followers']
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=6)
