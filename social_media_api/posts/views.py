@@ -1,10 +1,38 @@
 from django.shortcuts import render
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, permissions, filters, generics
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 from rest_framework.decorators import api_view, permission_classes
+from django.contrib.auth import get_user_model
+from rest_framework.response import Response
 
-# Create your views here.
+
+CustomUser = get_user_model()
+
+class FeedView(generics.GenericsAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request):
+        #get the users the current user is following
+        following_users = request.user.following.all()
+
+        #filter posts fro those users, order by newset first
+        posts = Post.objects.filter(author_in=following_users).order_by('-created_at')
+
+        serializer = self.get_serializer(posts, many=True)
+        return Response(serializer.data)
+
+
+
+      
+
+
+
+
+
+
+
+
 class IsOwnerOrReadyOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         #Read permissions allowed for everyone
@@ -33,15 +61,6 @@ class CommentViewSet(viewsets.ModelView):
     def perfom_create(self, serializer):
         serializer.save(author=self.request.us)
 
-@api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
-def feed(request):
-    user = request.user
-    #Get posts from users that the current user follows
-    posts = Post.objects.filter(author__in=user.following.all()).order_by('-created_at')
-    serialize = PostSerialize(posts, many=True)
-    return Response(serializer.data)
-      
     
       
 
