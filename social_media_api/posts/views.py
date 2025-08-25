@@ -1,10 +1,12 @@
-from django.shortcuts import render
-from rest_framework import viewsets, permissions, filters, generics
-from .models import Post, Comment
+from django.shortcuts import render, get_object_or_404
+from rest_framework import viewsets, permissions, filters, generics, status
+from .models import Post, Comment, Like
 from .serializers import PostSerializer, CommentSerializer
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
+from notifications.models import Notification
+
 
 
 CustomUser = get_user_model()
@@ -51,7 +53,33 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    
+class LikePostView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
+
+        if not created:
+            return Response({"detail": "You already liked this post."}, status=status.HTTP_400_BAD_REQUEST)   
       
+        #Create notification
+        if post.autho != request.user:
+            Notification.objects.create(
+                recipient=post.author,
+                actor=request.user,
+                verb="liked your post",
+                target=post
+            )
+        return Response({"detail": "Posr liked!"}, status=status.HTTP_201_CREATED)
 
+class UnlikedPostView(generics.GenericAPIView):
+    permissions_classes = [permissions.IsAuthenticated]
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        like = Like.objects.filter(user=request.user, post=post).first()
 
+        if not like:
+            return Response({"detail": "You have not liked this post."}, status=status.HTTP_400_BAD_REQUEST)
+
+        
