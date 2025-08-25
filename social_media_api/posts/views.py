@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 CustomUser = get_user_model()
 
-class FeedView(generics.GenericsAPIView):
+class FeedView(generics.GenericAPIView):
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
@@ -17,21 +17,11 @@ class FeedView(generics.GenericsAPIView):
         following_users = request.user.following.all()
 
         #filter posts fro those users, order by newset first
-        posts = Post.objects.filter(author_in=following_users).order_by('-created_at')
+        posts = Post.objects.filter(author__in=following_users).order_by('-created_at')
 
         serializer = self.get_serializer(posts, many=True)
         return Response(serializer.data)
-
-
-
-      
-
-
-
-
-
-
-
+   
 
 class IsOwnerOrReadyOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -42,9 +32,9 @@ class IsOwnerOrReadyOnly(permissions.BasePermission):
         return obj.author == request.user
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all().order_by("-crated_at")
+    queryset = Post.objects.all().order_by("-created_at")
     serializer_class = PostSerializer
-    permisson_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadyOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadyOnly]
     #Added 👇
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["title", "content"]
@@ -53,13 +43,13 @@ class PostViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-class CommentViewSet(viewsets.ModelView):
+class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all().order_by("-created_at")
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadyOnly]
 
-    def perfom_create(self, serializer):
-        serializer.save(author=self.request.us)
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
     
       
