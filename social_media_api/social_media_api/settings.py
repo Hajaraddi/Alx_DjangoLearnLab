@@ -7,6 +7,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Secret Key
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
 
+# Default: production safe
+DEBUG = False  
+
 # Debug
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
