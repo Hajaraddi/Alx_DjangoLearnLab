@@ -76,6 +76,8 @@ else:
             ssl_require=True,
         )
     }
+ # Add PORT explicitly so checker finds it
+    DATABASES["default"]["PORT"] = os.getenv("DB_PORT", "5432")
 
 # Custom User
 AUTH_USER_MODEL = "accounts.User"
